@@ -1,0 +1,2380 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Earn No.1 - Task Income Web Bot</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /*=================== ROOT VARIABLES ===================*/
+        :root {
+            --gold-primary: #D4AF37;
+            --gold-light: #F4E4BC;
+            --gold-dark: #996515;
+            --gold-gradient: linear-gradient(135deg, #D4AF37 0%, #F4E4BC 50%, #D4AF37 100%);
+            --dark-bg: #0D0D0D;
+            --card-bg: #1A1A1A;
+            --card-border: #2A2A2A;
+            --text-primary: #FFFFFF;
+            --text-secondary: #B0B0B0;
+            --success: #22C55E;
+            --danger: #EF4444;
+            --warning: #F59E0B;
+            --info: #3B82F6;
+        }
+
+        /*=================== GLOBAL STYLES ===================*/
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: var(--dark-bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /*=================== COMPONENTS ===================*/
+        .gold-gradient { background: var(--gold-gradient); }
+        .gold-text {
+            background: var(--gold-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+        .card:hover {
+            border-color: var(--gold-primary);
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.1);
+        }
+
+        .btn-gold {
+            background: var(--gold-gradient);
+            color: #000;
+            font-weight: 600;
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn-gold:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.3);
+        }
+        .btn-gold:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--gold-primary);
+            color: var(--gold-primary);
+            padding: 10px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .btn-outline:hover {
+            background: var(--gold-primary);
+            color: #000;
+        }
+
+        .input-field {
+            width: 100%;
+            background: var(--dark-bg);
+            border: 2px solid var(--card-border);
+            color: var(--text-primary);
+            padding: 14px 18px;
+            border-radius: 12px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: var(--gold-primary);
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.2);
+        }
+        .input-field::placeholder { color: var(--text-secondary); }
+
+        /*=================== LAYOUT ===================*/
+        .page { display: none; animation: fadeIn 0.4s ease; }
+        .page.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.3; }
+            90% { opacity: 0.3; }
+            100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
+        }
+
+        .notice-bar {
+            background: linear-gradient(90deg, var(--gold-dark), var(--gold-primary), var(--gold-dark));
+            color: #000;
+            padding: 10px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 14px;
+            position: sticky;
+            top: 0;
+            z-index: 40;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            right: -320px;
+            width: 320px;
+            height: 100vh;
+            background: var(--card-bg);
+            border-left: 1px solid var(--card-border);
+            z-index: 1000;
+            transition: right 0.3s ease;
+            overflow-y: auto;
+        }
+        .sidebar.open { right: 0; }
+
+        .overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 999;
+            display: none;
+        }
+        .overlay.active { display: block; }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--card-border);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .menu-item:hover {
+            background: rgba(212, 175, 55, 0.1);
+            border-left: 3px solid var(--gold-primary);
+        }
+
+        /*=================== BADGES & STATUS ===================*/
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+        .status-pending { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
+        .status-approved { background: rgba(34, 197, 94, 0.2); color: var(--success); }
+        .status-rejected { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+
+        .wallet-card {
+            background: linear-gradient(145deg, #1F1F1F 0%, #2A2A2A 100%);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: var(--card-border);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: var(--gold-gradient);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        /*=================== MODALS ===================*/
+        .modal {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 2000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .modal.active { display: flex; }
+        .modal-content {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: modalIn 0.3s ease;
+        }
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .tab-btn {
+            padding: 10px 20px;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+        .tab-btn.active {
+            color: var(--gold-primary);
+            border-bottom-color: var(--gold-primary);
+        }
+
+        /*=================== EFFECTS ===================*/
+        .floating-particles {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+        .particle {
+            position: absolute;
+            width: 4px; height: 4px;
+            background: var(--gold-primary);
+            border-radius: 50%;
+            opacity: 0.3;
+            animation: float 15s infinite;
+        }
+
+        .glass-effect {
+            background: rgba(26, 26, 26, 0.9);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--dark-bg); }
+        ::-webkit-scrollbar-thumb { background: var(--gold-primary); border-radius: 10px; }
+    </style>
+</head>
+<body>
+    <!-- Floating Particles -->
+    <div class="floating-particles" id="particles"></div>
+    <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+    
+    <!-- Notice Bar -->
+    <div class="notice-bar" id="noticeBar" style="display: none;">
+        <i class="fas fa-bell mr-2"></i>
+        <span id="noticeText"></span>
+    </div>
+
+    <!--=================== LOGIN PAGE ===================-->
+    <div class="page active" id="loginPage">
+        <div class="min-h-screen flex items-center justify-center p-4">
+            <div class="w-full max-w-md">
+                <div class="text-center mb-8">
+                    <div class="w-24 h-24 mx-auto mb-4 rounded-full gold-gradient flex items-center justify-center shadow-lg">
+                        <i class="fas fa-coins text-4xl text-black"></i>
+                    </div>
+                    <h1 class="text-3xl font-bold gold-text">Super Earn BD</h1>
+                    <p class="text-gray-400 mt-2">Task Income Web Bot</p>
+                </div>
+
+                <div class="card">
+                    <div class="flex mb-6 border-b border-gray-700">
+                        <button class="tab-btn active flex-1" onclick="switchAuthTab('login')">Login</button>
+                        <button class="tab-btn flex-1" onclick="switchAuthTab('register')">Register</button>
+                    </div>
+
+                    <!-- Login Form -->
+                    <form id="loginForm" onsubmit="handleLogin(event)">
+                        <div class="mb-4">
+                            <label class="block text-sm text-gray-400 mb-2">Phone Number</label>
+                            <input type="text" class="input-field" id="loginPhone" placeholder="01XXXXXXXXX" required>
+                        </div>
+                        <div class="mb-6">
+                            <label class="block text-sm text-gray-400 mb-2">Password</label>
+                            <input type="password" class="input-field" id="loginPassword" placeholder="Enter password" required>
+                        </div>
+                        <button type="submit" class="btn-gold w-full mb-4">
+                            <i class="fas fa-sign-in-alt"></i>Login
+                        </button>
+                    </form>
+
+                    <!-- Register Form -->
+                    <form id="registerForm" style="display: none;" onsubmit="handleRegister(event)">
+                        <div class="mb-4">
+                            <label class="block text-sm text-gray-400 mb-2">Full Name</label>
+                            <input type="text" class="input-field" id="regName" placeholder="Your full name" required>
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm text-gray-400 mb-2">Phone Number</label>
+                            <input type="text" class="input-field" id="regPhone" placeholder="01XXXXXXXXX" required>
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm text-gray-400 mb-2">Password</label>
+                            <input type="password" class="input-field" id="regPassword" placeholder="Create password" required>
+                        </div>
+                        <div class="mb-6">
+                            <label class="block text-sm text-gray-400 mb-2">Referral Code (Optional)</label>
+                            <input type="text" class="input-field" id="regReferral" placeholder="REFXXXXXX">
+                        </div>
+                        <button type="submit" class="btn-gold w-full mb-4">
+                            <i class="fas fa-user-plus"></i>Register
+                        </button>
+                    </form>
+
+                    <div class="text-center mt-4">
+                        <button onclick="showPage('adminLogin')" class="text-sm text-gray-500 hover:text-yellow-500 transition">
+                            <i class="fas fa-lock mr-1"></i>Admin Panel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--=================== ADMIN LOGIN PAGE ===================-->
+    <div class="page" id="adminLogin">
+        <div class="min-h-screen flex items-center justify-center p-4">
+            <div class="w-full max-w-md">
+                <div class="text-center mb-8">
+                    <div class="w-24 h-24 mx-auto mb-4 rounded-full bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center shadow-lg">
+                        <i class="fas fa-user-shield text-4xl text-white"></i>
+                    </div>
+                    <h1 class="text-3xl font-bold text-red-500">Admin Panel</h1>
+                    <p class="text-gray-400 mt-2">Authorized Access Only</p>
+                </div>
+
+                <div class="card border-red-500/30">
+                    <form onsubmit="handleAdminLogin(event)">
+                        <div class="mb-4">
+                            <label class="block text-sm text-gray-400 mb-2">Admin Username</label>
+                            <input type="text" class="input-field" id="adminUsername" placeholder="Admin username" required>
+                        </div>
+                        <div class="mb-6">
+                            <label class="block text-sm text-gray-400 mb-2">Admin Password</label>
+                            <input type="password" class="input-field" id="adminPassword" placeholder="Admin password" required>
+                        </div>
+                        <button type="submit" class="w-full bg-gradient-to-r from-red-500 to-red-700 text-white font-semibold py-3 rounded-xl hover:opacity-90 transition">
+                            <i class="fas fa-sign-in-alt mr-2"></i>Admin Login
+                        </button>
+                    </form>
+                    <div class="text-center mt-4">
+                        <button onclick="showPage('loginPage')" class="text-sm text-gray-500 hover:text-yellow-500 transition">
+                            <i class="fas fa-arrow-left mr-1"></i>Back to User Login
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--=================== HOME PAGE ===================-->
+    <div class="page" id="homePage">
+        <!-- Header -->
+        <header class="glass-effect sticky top-0 z-50 border-b border-gray-800">
+            <div class="flex items-center justify-between p-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full gold-gradient flex items-center justify-center">
+                        <i class="fas fa-coins text-black"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-bold gold-text">Super Earn BD</h1>
+                        <p class="text-xs text-gray-400" id="welcomeUser">Welcome, User</p>
+                    </div>
+                </div>
+                <button onclick="openSidebar()" class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-gray-700 transition">
+                    <i class="fas fa-bars text-yellow-500"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Activation Warning -->
+        <div id="activationWarning" class="p-4" style="display: none;">
+            <div class="card border-yellow-500/30 bg-yellow-500/10">
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="w-12 h-12 rounded-full bg-yellow-500/20 flex items-center justify-center">
+                        <i class="fas fa-exclamation-triangle text-yellow-500 text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-yellow-500">Account Not Active</h3>
+                        <p class="text-sm text-gray-400">Activate to unlock all features</p>
+                    </div>
+                </div>
+                <button onclick="openActivationModal()" class="btn-gold w-full">
+                    <i class="fas fa-unlock"></i>Activate Account
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="p-4 relative z-10">
+            <!-- Balance Cards -->
+            <div class="grid grid-cols-2 gap-3 mb-6">
+                <div class="card text-center">
+                    <i class="fas fa-wallet text-2xl text-yellow-500 mb-2"></i>
+                    <p class="text-xs text-gray-400">Main Balance</p>
+                    <p class="text-xl font-bold gold-text" id="mainBalance">0 TK</p>
+                </div>
+                <div class="card text-center">
+                    <i class="fas fa-users text-2xl text-green-500 mb-2"></i>
+                    <p class="text-xs text-gray-400">Active Refers</p>
+                    <p class="text-xl font-bold text-green-500" id="activeRefers">0</p>
+                </div>
+            </div>
+
+            <!-- Referral Section -->
+            <div class="card mb-6">
+                <h3 class="font-semibold mb-4 flex items-center gap-2">
+                    <i class="fas fa-share-alt text-yellow-500"></i>
+                    Refer & Earn
+                </h3>
+                <div class="bg-gray-900 rounded-xl p-3 mb-4">
+                    <p class="text-xs text-gray-400 mb-1">Your Referral Link</p>
+                    <div class="flex items-center gap-2">
+                        <input type="text" class="input-field text-sm" id="referralLink" readonly>
+                        <button onclick="copyReferralLink()" class="btn-outline px-3 py-2">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="text-center p-3 bg-green-500/10 rounded-xl">
+                        <p class="text-2xl font-bold text-green-500" id="activeRefCount">0</p>
+                        <p class="text-xs text-gray-400">Active Refer</p>
+                    </div>
+                    <div class="center p-3 bg-gray-500/10 rounded-xl text-center">
+                        <p class="text-2xl font-bold text-gray-400" id="inactiveRefCount">0</p>
+                        <p class="text-xs text-gray-400">Inactive Refer</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Salary Progress -->
+            <div class="card mb-6">
+                <h3 class="font-semibold mb-4 flex items-center gap-2">
+                    <i class="fas fa-gift text-yellow-500"></i>
+                    Salary Progress
+                </h3>
+                <div class="space-y-4" id="salaryProgressContainer"></div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="grid grid-cols-3 gap-3 mb-6">
+                <button onclick="openJobModal('freeJob')" class="card text-center py-4 hover:border-yellow-500 transition">
+                    <i class="fas fa-gift text-2xl text-yellow-500 mb-2"></i>
+                    <p class="text-xs">Free Job</p>
+                </button>
+                <button onclick="openJobModal('typing')" class="card text-center py-4 hover:border-yellow-500 transition">
+                    <i class="fas fa-keyboard text-2xl text-blue-500 mb-2"></i>
+                    <p class="text-xs">Typing Job</p>
+                </button>
+                <button onclick="openJobModal('adview')" class="card text-center py-4 hover:border-yellow-500 transition">
+                    <i class="fas fa-ad text-2xl text-green-500 mb-2"></i>
+                    <p class="text-xs">Ad View</p>
+                </button>
+            </div>
+
+            <!-- Wallet Overview -->
+            <div class="card">
+                <h3 class="font-semibold mb-4 flex items-center gap-2">
+                    <i class="fas fa-wallet text-yellow-500"></i>
+                    My Wallets
+                </h3>
+                <div class="space-y-3" id="walletContainer"></div>
+            </div>
+        </div>
+    </div>
+
+    <!--=================== ADMIN PANEL ===================-->
+    <div class="page" id="adminPanel">
+        <header class="glass-effect sticky top-0 z-50 border-b border-red-500/30">
+            <div class="flex items-center justify-between p-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center">
+                        <i class="fas fa-user-shield text-white"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-red-500">Admin Panel</h1>
+                        <p class="text-xs text-gray-400">Full Control Dashboard</p>
+                    </div>
+                </div>
+                <button onclick="adminLogout()" class="px-4 py-2 bg-red-500/20 text-red-500 rounded-lg text-sm hover:bg-red-500 hover:text-white transition">
+                    <i class="fas fa-sign-out-alt mr-1"></i>Logout
+                </button>
+            </div>
+        </header>
+
+        <div class="p-4 relative z-10">
+            <!-- Admin Tabs -->
+            <div class="flex overflow-x-auto gap-2 mb-6 pb-2">
+                <button class="admin-tab active px-4 py-2 bg-yellow-500 text-black rounded-lg text-sm whitespace-nowrap" onclick="switchAdminTab('overview')">Overview</button>
+                <button class="admin-tab px-4 py-2 bg-gray-800 text-gray-400 rounded-lg text-sm whitespace-nowrap" onclick="switchAdminTab('users')">Users</button>
+                <button class="admin-tab px-4 py-2 bg-gray-800 text-gray-400 rounded-lg text-sm whitespace-nowrap" onclick="switchAdminTab('requests')">Requests</button>
+                <button class="admin-tab px-4 py-2 bg-gray-800 text-gray-400 rounded-lg text-sm whitespace-nowrap" onclick="switchAdminTab('jobs')">Job Settings</button>
+                <button class="admin-tab px-4 py-2 bg-gray-800 text-gray-400 rounded-lg text-sm whitespace-nowrap" onclick="switchAdminTab('withdraw')">Withdraw</button>
+                <button class="admin-tab px-4 py-2 bg-gray-800 text-gray-400 rounded-lg text-sm whitespace-nowrap" onclick="switchAdminTab('settings')">Settings</button>
+            </div>
+
+            <!-- Admin Overview -->
+            <div id="adminOverview" class="admin-content">
+                <div class="grid grid-cols-2 gap-3 mb-6">
+                    <div class="card text-center">
+                        <i class="fas fa-users text-3xl text-blue-500 mb-2"></i>
+                        <p class="text-2xl font-bold" id="totalUsers">0</p>
+                        <p class="text-xs text-gray-400">Total Users</p>
+                    </div>
+                    <div class="card text-center">
+                        <i class="fas fa-user-check text-3xl text-green-500 mb-2"></i>
+                        <p class="text-2xl font-bold text-green-500" id="activeUsers">0</p>
+                        <p class="text-xs text-gray-400">Active Users</p>
+                    </div>
+                    <div class="card text-center">
+                        <i class="fas fa-clock text-3xl text-yellow-500 mb-2"></i>
+                        <p class="text-2xl font-bold text-yellow-500" id="pendingRequests">0</p>
+                        <p class="text-xs text-gray-400">Pending Requests</p>
+                    </div>
+                    <div class="card text-center">
+                        <i class="fas fa-hand-holding-usd text-3xl text-purple-500 mb-2"></i>
+                        <p class="text-2xl font-bold text-purple-500" id="totalWithdrawals">0</p>
+                        <p class="text-xs text-gray-400">Total Withdrawals</p>
+                    </div>
+                </div>
+                <div class="card mb-6">
+                    <h3 class="font-semibold mb-4">Update Notice</h3>
+                    <textarea class="input-field mb-3" id="adminNotice" rows="2" placeholder="Enter notice..."></textarea>
+                    <button onclick="updateNotice()" class="btn-gold w-full">Update Notice</button>
+                </div>
+                <div class="card">
+                    <h3 class="font-semibold mb-4">Recent Activity</h3>
+                    <div class="space-y-3 max-h-60 overflow-y-auto" id="recentActivity"></div>
+                </div>
+            </div>
+
+            <!-- Admin Users -->
+            <div id="adminUsers" class="admin-content" style="display: none;">
+                <div class="mb-4">
+                    <input type="text" class="input-field" id="searchUser" placeholder="Search user by phone..." oninput="searchUsers()">
+                </div>
+                <div class="space-y-3" id="usersList"></div>
+            </div>
+
+            <!-- Admin Requests -->
+            <div id="adminRequests" class="admin-content" style="display: none;">
+                <div class="flex gap-2 mb-4 overflow-x-auto pb-2">
+                    <button class="request-filter active px-3 py-2 bg-yellow-500 text-black rounded-lg text-sm whitespace-nowrap" onclick="filterRequests('all')">All</button>
+                    <button class="request-filter px-3 py-2 bg-gray-800 text-gray-400 rounded-lg text-sm whitespace-nowrap" onclick="filterRequests('activation')">Activation</button>
+                    <button class="request-filter px-3 py-2 bg-gray-800 text-gray-400 rounded-lg text-sm whitespace-nowrap" onclick="filterRequests('withdraw')">Withdraw</button>
+                    <button class="request-filter px-3 py-2 bg-gray-800 text-gray-400 rounded-lg text-sm whitespace-nowrap" onclick="filterRequests('job')">Job Submit</button>
+                </div>
+                <div class="space-y-3" id="requestsList"></div>
+            </div>
+
+            <!-- Admin Job Settings -->
+            <div id="adminJobs" class="admin-content" style="display: none;">
+                <div class="space-y-4">
+                    <!-- Free Job Settings -->
+                    <div class="card">
+                        <h3 class="font-semibold mb-4 flex items-center gap-2">
+                            <i class="fas fa-gift text-yellow-500"></i>Free Job Settings
+                        </h3>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="text-xs text-gray-400">Rate Per Task</label>
+                                <input type="number" class="input-field" id="freeJobRate" value="3">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-400">Min Withdraw</label>
+                                <input type="number" class="input-field" id="freeJobMinWithdraw" value="30">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-400">Daily Limit</label>
+                                <input type="number" class="input-field" id="freeJobDailyLimit" value="10">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-400">Status</label>
+                                <select class="input-field" id="freeJobStatus">
+                                    <option value="active">Active</option>
+                                    <option value="inactive">Inactive</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <label class="text-xs text-gray-400">Group/Channel Link (Free Job)</label>
+                            <input type="text" class="input-field" id="freeJobGroupLink" placeholder="https://t.me/yourchannel">
+                        </div>
+                        <button onclick="saveJobSettings('freeJob')" class="btn-gold mt-3 w-full">Save Settings</button>
+                    </div>
+
+                    <!-- Gmail Sale Settings -->
+                    <div class="card">
+                        <h3 class="font-semibold mb-4 flex items-center gap-2">
+                            <i class="fab fa-google text-red-500"></i>Gmail Sale Settings
+                        </h3>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="text-xs text-gray-400">Rate Per Gmail</label>
+                                <input type="number" class="input-field" id="gmailRate" value="5">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-400">Min Withdraw</label>
+                                <input type="number" class="input-field" id="gmailMinWithdraw" value="50">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-400">Daily Limit</label>
+                                <input type="number" class="input-field" id="gmailDailyLimit" value="10">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-400">Status</label>
+                                <select class="input-field" id="gmailStatus">
+                                    <option value="active">Active</option>
+                                    <option value="inactive">Inactive</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button onclick="saveJobSettings('gmail')" class="btn-gold mt-3 w-full">Save Settings</button>
+                    </div>
+
+                    <!-- Facebook Sale Settings -->
+                    <div class="card">
+                        <h3 class="font-semibold mb-4 flex items-center gap-2">
+                            <i class="fab fa-facebook text-blue-500"></i>Facebook Sale Settings
+                        </h3>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="text-xs text-gray-400">Rate Per Account</label>
+                                <input type="number" class="input-field" id="facebookRate" value="8">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-400">Min Withdraw</label>
+                                <input type="number" class="input-field" id="facebookMinWithdraw" value="50">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-400">Daily Limit</label>
+                                <input type="number" class="input-field" id="facebookDailyLimit" value="5">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-400">Status</label>
+                                <select class="input-field" id="facebookStatus">
+                                    <option value="active">Active</option>
+                                    <option value="inactive">Inactive</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button onclick="saveJobSettings('facebook')" class="btn-gold mt-3 w-full">Save Settings</button>
+                    </div>
+
+                    <!-- Typing Job Settings -->
+                    <div class="card">
+                        <h3 class="font-semibold mb-4 flex items-center gap-2">
+                            <i class="fas fa-keyboard text-green-500"></i>Typing Job Settings
+                        </h3>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="text-xs text-gray-400">Rate Per Page</label>
+                                <input type="number" class="input-field" id="typingRate" value="10">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-400">Min Withdraw</label>
+                                <input type="number" class="input-field" id="typingMinWithdraw" value="100">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-400">Daily Limit</label>
+                                <input type="number" class="input-field" id="typingDailyLimit" value="20">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-400">Status</label>
+                                <select class="input-field" id="typingStatus">
+                                    <option value="active">Active</option>
+                                    <option value="inactive">Inactive</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button onclick="saveJobSettings('typing')" class="btn-gold mt-3 w-full">Save Settings</button>
+                    </div>
+
+                    <!-- Ad View Settings -->
+                    <div class="card">
+                        <h3 class="font-semibold mb-4 flex items-center gap-2">
+                            <i class="fas fa-ad text-purple-500"></i>Ad View Settings
+                        </h3>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="text-xs text-gray-400">Rate Per Ad</label>
+                                <input type="number" class="input-field" id="adviewRate" value="2">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-400">Min Withdraw</label>
+                                <input type="number" class="input-field" id="adviewMinWithdraw" value="30">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-400">Daily Limit</label>
+                                <input type="number" class="input-field" id="adviewDailyLimit" value="50">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-400">Status</label>
+                                <select class="input-field" id="adviewStatus">
+                                    <option value="active">Active</option>
+                                    <option value="inactive">Inactive</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button onclick="saveJobSettings('adview')" class="btn-gold mt-3 w-full">Save Settings</button>
+                    </div>
+
+                    <!-- Instagram Sale Settings -->
+                    <div class="card">
+                        <h3 class="font-semibold mb-4 flex items-center gap-2">
+                            <i class="fab fa-instagram text-pink-500"></i>Instagram Sale Settings
+                        </h3>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="text-xs text-gray-400">Rate Per Account</label>
+                                <input type="number" class="input-field" id="instagramRate" value="10">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-400">Min Withdraw</label>
+                                <input type="number" class="input-field" id="instagramMinWithdraw" value="50">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-400">Daily Limit</label>
+                                <input type="number" class="input-field" id="instagramDailyLimit" value="5">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-400">Status</label>
+                                <select class="input-field" id="instagramStatus">
+                                    <option value="active">Active</option>
+                                    <option value="inactive">Inactive</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button onclick="saveJobSettings('instagram')" class="btn-gold mt-3 w-full">Save Settings</button>
+                    </div>
+
+                    <!-- Refer Wallet Settings -->
+                    <div class="card">
+                        <h3 class="font-semibold mb-4 flex items-center gap-2">
+                            <i class="fas fa-users text-cyan-500"></i>Refer Wallet Settings
+                        </h3>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="text-xs text-gray-400">Refer Bonus</label>
+                                <input type="number" class="input-field" id="referBonus" value="10">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-400">Min Withdraw</label>
+                                <input type="number" class="input-field" id="referMinWithdraw" value="50">
+                            </div>
+                        </div>
+                        <button onclick="saveJobSettings('refer')" class="btn-gold mt-3 w-full">Save Settings</button>
+                    </div>
+
+                    <!-- Salary Wallet Settings -->
+                    <div class="card">
+                        <h3 class="font-semibold mb-4 flex items-center gap-2">
+                            <i class="fas fa-money-bill-wave text-emerald-500"></i>Salary Wallet Settings
+                        </h3>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="text-xs text-gray-400">Min Withdraw</label>
+                                <input type="number" class="input-field" id="salaryMinWithdraw" value="50">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-400">Activation Fee</label>
+                                <input type="number" class="input-field" id="activationFee" value="100">
+                            </div>
+                        </div>
+                        <button onclick="saveJobSettings('salary')" class="btn-gold mt-3 w-full">Save Settings</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Admin Withdraw -->
+            <div id="adminWithdraw" class="admin-content" style="display: none;">
+                <div class="card mb-4">
+                    <h3 class="font-semibold mb-4">Payment Methods</h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-3 p-3 bg-gray-900 rounded-xl">
+                            <div class="w-10 h-10 bg-pink-500 rounded-lg flex items-center justify-center text-white font-bold text-xs">BK</div>
+                            <div class="flex-1">
+                                <input type="text" class="input-field text-sm" id="bkashNumber" placeholder="bKash Number">
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 p-3 bg-gray-900 rounded-xl">
+                            <div class="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center text-white font-bold text-xs">N</div>
+                            <div class="flex-1">
+                                <input type="text" class="input-field text-sm" id="nagadNumber" placeholder="Nagad Number">
+                            </div>
+                        </div>
+                    </div>
+                    <button onclick="savePaymentMethods()" class="btn-gold mt-3 w-full">Save Payment Methods</button>
+                </div>
+                <div class="card">
+                    <h3 class="font-semibold mb-4">Withdraw Requests</h3>
+                    <div class="space-y-3 max-h-96 overflow-y-auto" id="withdrawRequestsList"></div>
+                </div>
+            </div>
+
+            <!-- Admin Settings -->
+            <div id="adminSettings" class="admin-content" style="display: none;">
+                <div class="space-y-4">
+                    <div class="card">
+                        <h3 class="font-semibold mb-4">Admin Credentials</h3>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="text-xs text-gray-400">Username</label>
+                                <input type="text" class="input-field" id="newAdminUsername" placeholder="New username">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-400">New Password</label>
+                                <input type="password" class="input-field" id="newAdminPassword" placeholder="New password">
+                            </div>
+                        </div>
+                        <button onclick="updateAdminCredentials()" class="btn-gold mt-3 w-full">Update Credentials</button>
+                    </div>
+
+                    <div class="card">
+                        <h3 class="font-semibold mb-4">Salary Bonuses</h3>
+                        <div class="space-y-3">
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="text-xs text-gray-400">5 Refer Bonus</label>
+                                    <input type="number" class="input-field" id="salary5" value="25">
+                                </div>
+                                <div>
+                                    <label class="text-xs text-gray-400">10 Refer Bonus</label>
+                                    <input type="number" class="input-field" id="salary10" value="50">
+                                </div>
+                                <div>
+                                    <label class="text-xs text-gray-400">15 Refer Bonus</label>
+                                    <input type="number" class="input-field" id="salary15" value="75">
+                                </div>
+                                <div>
+                                    <label class="text-xs text-gray-400">20 Refer Bonus</label>
+                                    <input type="number" class="input-field" id="salary20" value="100">
+                                </div>
+                            </div>
+                        </div>
+                        <button onclick="saveSalaryBonuses()" class="btn-gold mt-3 w-full">Save Bonuses</button>
+                    </div>
+
+                    <!-- DANGER ZONE -->
+                    <div class="card border-red-500/50 bg-red-500/5">
+                        <h3 class="font-semibold mb-4 text-red-500"><i class="fas fa-exclamation-triangle mr-2"></i>Danger Zone</h3>
+                        <p class="text-xs text-gray-400 mb-4">These actions are irreversible. Please be careful.</p>
+                        <div class="space-y-3">
+                            <button onclick="resetAllData()" class="w-full py-3 bg-red-500/20 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition">
+                                <i class="fas fa-trash mr-2"></i>Reset All Data
+                            </button>
+                            <button onclick="deleteInactiveUsers()" class="w-full py-3 bg-orange-500/20 text-orange-400 rounded-xl hover:bg-orange-500 hover:text-white transition">
+                                <i class="fas fa-user-minus mr-2"></i>Delete Inactive Users (Unpaid)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--=================== SIDEBAR ===================-->
+    <div class="sidebar" id="sidebar">
+        <div class="p-4 border-b border-gray-800 flex items-center justify-between">
+            <h2 class="font-bold gold-text">Menu</h2>
+            <button onclick="closeSidebar()" class="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center">
+                <i class="fas fa-times text-gray-400"></i>
+            </button>
+        </div>
+        <div class="py-2">
+            <div class="menu-item" onclick="openJobModal('gmail')">
+                <i class="fab fa-google text-red-500 w-6"></i>
+                <span>Gmail Sale</span>
+            </div>
+            <div class="menu-item" onclick="openJobModal('facebook')">
+                <i class="fab fa-facebook text-blue-500 w-6"></i>
+                <span>Facebook Sale</span>
+            </div>
+            <div class="menu-item" onclick="openJobModal('typing')">
+                <i class="fas fa-keyboard text-green-500 w-6"></i>
+                <span>Typing Job</span>
+            </div>
+            <div class="menu-item" onclick="openJobModal('adview')">
+                <i class="fas fa-ad text-purple-500 w-6"></i>
+                <span>Ad View Income</span>
+            </div>
+            <div class="menu-item" onclick="openJobModal('instagram')">
+                <i class="fab fa-instagram text-pink-500 w-6"></i>
+                <span>Instagram Sale</span>
+            </div>
+            <div class="menu-item" onclick="openJobModal('freeJob')">
+                <i class="fas fa-gift text-yellow-500 w-6"></i>
+                <span>Free Job</span>
+            </div>
+            <div class="menu-item" onclick="openWithdrawModal()">
+                <i class="fas fa-wallet text-cyan-500 w-6"></i>
+                <span>Withdraw</span>
+            </div>
+            <div class="menu-item" onclick="openHistoryModal()">
+                <i class="fas fa-history text-orange-500 w-6"></i>
+                <span>History</span>
+            </div>
+            <div class="menu-item" onclick="openSalaryModal()">
+                <i class="fas fa-gift text-emerald-500 w-6"></i>
+                <span>Salary Bonus</span>
+            </div>
+            <div class="menu-item" onclick="userLogout()">
+                <i class="fas fa-sign-out-alt text-red-500 w-6"></i>
+                <span>Logout</span>
+            </div>
+        </div>
+    </div>
+
+    <!--=================== MODALS ===================-->
+    <!-- Activation Modal -->
+    <div class="modal" id="activationModal">
+        <div class="modal-content p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-bold gold-text">Account Activation</h3>
+                <button onclick="closeModal('activationModal')" class="text-gray-400 hover:text-white">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="mb-6">
+                <p class="text-gray-400 mb-4">Pay <span class="text-yellow-500 font-bold" id="activationAmount">100</span> Taka to activate</p>
+                <div class="space-y-3 mb-4">
+                    <label class="flex items-center gap-3 p-3 bg-gray-900 rounded-xl cursor-pointer">
+                        <input type="radio" name="paymentMethod" value="bkash" checked class="accent-yellow-500">
+                        <div class="w-8 h-8 bg-pink-500 rounded-lg flex items-center justify-center text-white font-bold text-xs">BK</div>
+                        <span>bKash</span>
+                        <span class="ml-auto text-sm text-gray-400" id="bkashNum">01XXXXXXXXX</span>
+                    </label>
+                    <label class="flex items-center gap-3 p-3 bg-gray-900 rounded-xl cursor-pointer">
+                        <input type="radio" name="paymentMethod" value="nagad" class="accent-yellow-500">
+                        <div class="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center text-white font-bold text-xs">N</div>
+                        <span>Nagad</span>
+                        <span class="ml-auto text-sm text-gray-400" id="nagadNum">01XXXXXXXXX</span>
+                    </label>
+                </div>
+                <div>
+                    <label class="text-sm text-gray-400 mb-2 block">Transaction ID</label>
+                    <input type="text" class="input-field" id="transactionId" placeholder="Enter transaction ID">
+                </div>
+            </div>
+            <button onclick="submitActivation()" class="btn-gold w-full">
+                <i class="fas fa-check mr-2"></i>Submit Request
+            </button>
+        </div>
+    </div>
+
+    <!-- Job Modal -->
+    <div class="modal" id="jobModal">
+        <div class="modal-content p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-bold gold-text" id="jobModalTitle">Job Title</h3>
+                <button onclick="closeModal('jobModal')" class="text-gray-400 hover:text-white">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div id="jobModalContent"></div>
+        </div>
+    </div>
+
+    <!-- Withdraw Modal -->
+    <div class="modal" id="withdrawModal">
+        <div class="modal-content p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-bold gold-text">Withdraw</h3>
+                <button onclick="closeModal('withdrawModal')" class="text-gray-400 hover:text-white">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div id="withdrawContent"></div>
+        </div>
+    </div>
+
+    <!-- History Modal -->
+    <div class="modal" id="historyModal">
+        <div class="modal-content p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-bold gold-text">History</h3>
+                <button onclick="closeModal('historyModal')" class="text-gray-400 hover:text-white">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="flex gap-2 mb-4 overflow-x-auto pb-2">
+                <button class="history-filter active px-3 py-1 bg-yellow-500 text-black rounded-lg text-sm whitespace-nowrap" onclick="filterHistory('all')">All</button>
+                <button class="history-filter px-3 py-1 bg-gray-800 text-gray-400 rounded-lg text-sm whitespace-nowrap" onclick="filterHistory('pending')">Pending</button>
+                <button class="history-filter px-3 py-1 bg-gray-800 text-gray-400 rounded-lg text-sm whitespace-nowrap" onclick="filterHistory('approved')">Approved</button>
+                <button class="history-filter px-3 py-1 bg-gray-800 text-gray-400 rounded-lg text-sm whitespace-nowrap" onclick="filterHistory('rejected')">Rejected</button>
+            </div>
+            <div class="space-y-3 max-h-96 overflow-y-auto" id="historyContent"></div>
+        </div>
+    </div>
+
+    <!-- Salary Modal -->
+    <div class="modal" id="salaryModal">
+        <div class="modal-content p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-bold gold-text">Salary Bonus</h3>
+                <button onclick="closeModal('salaryModal')" class="text-gray-400 hover:text-white">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="space-y-3" id="salaryContent"></div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-4 left-1/2 -translate-x-1/2 px-6 py-3 rounded-xl text-white font-medium z-[3000] transition-all duration-300 opacity-0 translate-y-10 pointer-events-none"></div>
+
+    <!--=================== JAVASCRIPT ===================-->
+    <script>
+        // ===== FIREBASE CONFIG =====
+        const firebaseConfig = {
+  apiKey: "AIzaSyAvpY9C9to5kle3EWZEqr1Qru-3kIZY0_o",
+  authDomain: "superearnpremium.firebaseapp.com",
+  projectId: "superearnpremium",
+  storageBucket: "superearnpremium.firebasestorage.app",
+  messagingSenderId: "276608402143",
+  appId: "1:276608402143:web:5107fdfa64174bbe54df6a",
+  measurementId: "G-34N65GEZ1G"
+};
+
+        // ===== LOCAL STORAGE DATABASE HELPER =====
+        const DB = {
+            get: (key) => {
+                try {
+                    return JSON.parse(localStorage.getItem(key));
+                } catch (e) {
+                    return null;
+                }
+            },
+            set: (key, value) => {
+                localStorage.setItem(key, JSON.stringify(value));
+            },
+            remove: (key) => localStorage.removeItem(key)
+        };
+
+        // ===== INITIALIZE APPLICATION =====
+        function initializeApp() {
+            // Default Admin Credentials
+            if (!DB.get('adminCredentials')) {
+                DB.set('adminCredentials', { username: 'admin', password: 'admin123' });
+            }
+            
+            // Default App Settings
+            if (!DB.get('appSettings')) {
+                DB.set('appSettings', {
+                    activationFee: 100,
+                    referBonus: 10,
+                    bkashNumber: '01712345678',
+                    nagadNumber: '01812345678',
+                    notice: 'Welcome to Super Earn BD! Complete tasks and earn money.',
+                    freeJobGroupLink: 'https://t.me/SupperEarnBD',
+                    salaryBonuses: { 5: 25, 10: 50, 15: 75, 20: 100 }
+                });
+            }
+            
+            // Default Job Settings
+            if (!DB.get('jobSettings')) {
+                DB.set('jobSettings', {
+                    gmail: { rate: 5, minWithdraw: 50, dailyLimit: 10, status: 'active' },
+                    facebook: { rate: 8, minWithdraw: 50, dailyLimit: 5, status: 'active' },
+                    typing: { rate: 10, minWithdraw: 100, dailyLimit: 20, status: 'active' },
+                    adview: { rate: 2, minWithdraw: 30, dailyLimit: 50, status: 'active' },
+                    instagram: { rate: 10, minWithdraw: 50, dailyLimit: 5, status: 'active' },
+                    freeJob: { rate: 3, minWithdraw: 30, dailyLimit: 10, status: 'active', groupLink: 'https://t.me/SupperEarnBD' },
+                    refer: { minWithdraw: 50 },
+                    salary: { minWithdraw: 50 }
+                });
+            }
+
+            // Initialize Empty Arrays if not exists
+            if (!DB.get('users')) { DB.set('users', []); }
+            if (!DB.get('requests')) { DB.set('requests', []); }
+            if (!DB.get('activities')) { DB.set('activities', []); }
+            
+            // Migration Logic: Fix old 'free' wallet to 'freeJob'
+            let users = DB.get('users');
+            let needsMigration = false;
+            if (users && users.length > 0) {
+                users.forEach(u => {
+                    if (u.wallets && typeof u.wallets.free !== 'undefined') {
+                        u.wallets.freeJob = (u.wallets.freeJob || 0) + u.wallets.free;
+                        delete u.wallets.free;
+                        needsMigration = true;
+                    }
+                    // Ensure all job types exist in wallet
+                    const walletKeys = ['gmail', 'facebook', 'typing', 'adview', 'instagram', 'freeJob', 'refer', 'salary'];
+                    if(!u.wallets) u.wallets = {};
+                    walletKeys.forEach(k => {
+                        if(typeof u.wallets[k] === 'undefined') u.wallets[k] = 0;
+                    });
+                });
+                if (needsMigration) DB.set('users', users);
+            }
+        }
+        
+        initializeApp();
+
+        // ===== GLOBAL VARIABLES =====
+        let currentUser = null;
+        let currentJobType = null;
+
+        // ===== UTILITY FUNCTIONS =====
+        function generateReferralCode() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let code = 'REF';
+            for (let i = 0; i < 5; i++) {
+                code += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return code;
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'fixed bottom-4 left-1/2 -translate-x-1/2 px-6 py-3 rounded-xl text-white font-medium z-[3000] transition-all duration-300';
+            
+            if (type === 'success') toast.classList.add('bg-green-500');
+            else if (type === 'error') toast.classList.add('bg-red-500');
+            else if (type === 'warning') toast.classList.add('bg-yellow-500', 'text-black');
+            else toast.classList.add('bg-blue-500');
+            
+            toast.classList.remove('opacity-0', 'translate-y-10', 'pointer-events-none');
+            setTimeout(() => { toast.classList.add('opacity-0', 'translate-y-10', 'pointer-events-none'); }, 3000);
+        }
+
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+        }
+
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('bn-BD').format(amount) + ' TK';
+        }
+
+        function addActivity(type, message, userId = null) {
+            const activities = DB.get('activities') || [];
+            activities.unshift({ id: Date.now(), type, message, userId, timestamp: new Date().toISOString() });
+            if (activities.length > 50) activities.pop();
+            DB.set('activities', activities);
+        }
+
+        // ===== PARTICLES ANIMATION =====
+        function createParticles() {
+            const container = document.getElementById('particles');
+            if (!container) return;
+            container.innerHTML = '';
+            for (let i = 0; i < 30; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 15 + 's';
+                particle.style.animationDuration = (15 + Math.random() * 10) + 's';
+                container.appendChild(particle);
+            }
+        }
+        createParticles();
+
+        // ===== AUTH FUNCTIONS =====
+        function switchAuthTab(tab) {
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+            const tabs = document.querySelectorAll('.tab-btn');
+            
+            tabs.forEach(t => t.classList.remove('active'));
+            
+            if (tab === 'login') {
+                loginForm.style.display = 'block';
+                registerForm.style.display = 'none';
+                tabs[0].classList.add('active');
+            } else {
+                loginForm.style.display = 'none';
+                registerForm.style.display = 'block';
+                tabs[1].classList.add('active');
+            }
+        }
+
+        function handleRegister(e) {
+            e.preventDefault();
+            const name = document.getElementById('regName').value.trim();
+            const phone = document.getElementById('regPhone').value.trim();
+            const password = document.getElementById('regPassword').value;
+            const referralCode = document.getElementById('regReferral').value.trim().toUpperCase();
+            
+            let users = DB.get('users') || [];
+            
+            if (users.find(u => u.phone === phone)) {
+                showToast('এই নম্বর দিয়ে ইতিমধ্যে রেজিস্ট্রেশন করা হয়েছে!', 'error');
+                return;
+            }
+            
+            const newUser = {
+                id: Date.now(), name, phone, password,
+                referralCode: generateReferralCode(),
+                referredBy: referralCode || null,
+                isActive: false,
+                createdAt: new Date().toISOString(),
+                wallets: { main: 0, gmail: 0, facebook: 0, typing: 0, adview: 0, instagram: 0, freeJob: 0, refer: 0, salary: 0 },
+                stats: { activeRefers: 0, inactiveRefers: 0, totalRefers: 0 },
+                salaryClaimed: { 5: false, 10: false, 15: false, 20: false },
+                dailyTasks: {}
+            };
+            
+            users.push(newUser);
+            DB.set('users', users);
+            
+            // Update Referrer Stats
+            if (referralCode) {
+                let referrer = users.find(u => u.referralCode === referralCode);
+                if (referrer) {
+                    referrer.stats.totalRefers++;
+                    referrer.stats.inactiveRefers++;
+                    DB.set('users', users);
+                }
+            }
+            
+            addActivity('register', `New user: ${name}`, newUser.id);
+            showToast('রেজিস্ট্রেশন সফল! এখন লগইন করুন', 'success');
+            switchAuthTab('login');
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const phone = document.getElementById('loginPhone').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            
+            const users = DB.get('users') || [];
+            const user = users.find(u => u.phone === phone && u.password === password);
+            
+            if (!user) {
+                showToast('ফোন নম্বর বা পাসওয়ার্ড ভুল!', 'error');
+                return;
+            }
+            
+            currentUser = user;
+            DB.set('currentUser', user.id);
+            loadUserDashboard();
+            showToast('লগইন সফল!', 'success');
+        }
+
+        function handleAdminLogin(e) {
+            e.preventDefault();
+            const username = document.getElementById('adminUsername').value.trim();
+            const password = document.getElementById('adminPassword').value;
+            const admin = DB.get('adminCredentials');
+            
+            if (username === admin.username && password === admin.password) {
+                DB.set('adminLoggedIn', true);
+                loadAdminPanel();
+                showToast('Admin লগইন সফল!', 'success');
+            } else {
+                showToast('Invalid credentials!', 'error');
+            }
+        }
+
+        function userLogout() {
+            currentUser = null;
+            DB.remove('currentUser');
+            closeSidebar();
+            showPage('loginPage');
+            showToast('Logout সফল!', 'success');
+        }
+
+        function adminLogout() {
+            DB.remove('adminLoggedIn');
+            showPage('loginPage');
+            showToast('Admin Logout সফল!', 'success');
+        }
+
+        // ===== USER DASHBOARD =====
+        function loadUserDashboard() {
+            showPage('homePage');
+            document.getElementById('welcomeUser').textContent = `Welcome, ${currentUser.name}`;
+            
+            const warning = document.getElementById('activationWarning');
+            warning.style.display = currentUser.isActive ? 'none' : 'block';
+            
+            const settings = DB.get('appSettings');
+            if (settings && settings.notice) {
+                document.getElementById('noticeBar').style.display = 'block';
+                document.getElementById('noticeText').textContent = settings.notice;
+            }
+            
+            document.getElementById('referralLink').value = `https://t.me/@SuperEarnbd_bot?startapp=${currentUser.referralCode}`;
+            updateUserStats();
+            updateWalletDisplay();
+            updateSalaryProgress();
+        }
+
+        function updateUserStats() {
+            if (!currentUser) return;
+            const users = DB.get('users') || [];
+            const refers = users.filter(u => u.referredBy === currentUser.referralCode);
+            
+            let activeCount = 0;
+            let inactiveCount = 0;
+            refers.forEach(r => { r.isActive ? activeCount++ : inactiveCount++; });
+            
+            currentUser.stats.activeRefers = activeCount;
+            currentUser.stats.inactiveRefers = inactiveCount;
+            currentUser.stats.totalRefers = refers.length;
+            
+            // Update persistent data
+            let allUsers = DB.get('users') || [];
+            let idx = allUsers.findIndex(u => u.id === currentUser.id);
+            if (idx !== -1) {
+                allUsers[idx] = currentUser;
+                DB.set('users', allUsers);
+            }
+            
+            document.getElementById('activeRefers').textContent = activeCount;
+            document.getElementById('activeRefCount').textContent = activeCount;
+            document.getElementById('inactiveRefCount').textContent = inactiveCount;
+        }
+
+        function updateWalletDisplay() {
+            if (!currentUser) return;
+            
+            // Calculate Total Balance
+            const mainBalance = Object.keys(currentUser.wallets).reduce((sum, key) => {
+                return sum + (currentUser.wallets[key] || 0);
+            }, 0);
+            
+            document.getElementById('mainBalance').textContent = formatCurrency(mainBalance);
+            
+            const container = document.getElementById('walletContainer');
+            const jobSettings = DB.get('jobSettings') || {};
+            
+            const walletNames = {
+                gmail: { name: 'Gmail Wallet', icon: 'fab fa-google', color: 'text-red-500' },
+                facebook: { name: 'Facebook Wallet', icon: 'fab fa-facebook', color: 'text-blue-500' },
+                typing: { name: 'Typing Wallet', icon: 'fas fa-keyboard', color: 'text-green-500' },
+                adview: { name: 'Ad View Wallet', icon: 'fas fa-ad', color: 'text-purple-500' },
+                instagram: { name: 'Instagram Wallet', icon: 'fab fa-instagram', color: 'text-pink-500' },
+                freeJob: { name: 'Free Job Wallet', icon: 'fas fa-gift', color: 'text-yellow-500' },
+                refer: { name: 'Refer Wallet', icon: 'fas fa-users', color: 'text-cyan-500' },
+                salary: { name: 'Salary Wallet', icon: 'fas fa-money-bill-wave', color: 'text-emerald-500' }
+            };
+            
+            container.innerHTML = Object.keys(walletNames).map(key => {
+                const info = walletNames[key];
+                const settings = jobSettings[key] || {};
+                const minWithdraw = settings.minWithdraw || 50;
+                const value = currentUser.wallets[key] || 0;
+                
+                return `
+                    <div class="wallet-card flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <i class="${info.icon} text-xl ${info.color}"></i>
+                            <div>
+                                <p class="text-sm font-medium">${info.name}</p>
+                                <p class="text-xs text-gray-400">Min: ${minWithdraw} TK</p>
+                            </div>
+                        </div>
+                        <p class="font-bold gold-text">${formatCurrency(value)}</p>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateSalaryProgress() {
+            if (!currentUser) return;
+            const container = document.getElementById('salaryProgressContainer');
+            const settings = DB.get('appSettings');
+            const bonuses = settings?.salaryBonuses || { 5: 25, 10: 50, 15: 75, 20: 100 };
+            const activeRefers = currentUser.stats.activeRefers;
+            
+            container.innerHTML = Object.entries(bonuses).map(([refer, bonus]) => {
+                const referNum = parseInt(refer);
+                const progress = Math.min((activeRefers / referNum) * 100, 100);
+                const isUnlocked = activeRefers >= referNum;
+                const isClaimed = currentUser.salaryClaimed[refer];
+                
+                return `
+                    <div class="p-3 rounded-xl ${isUnlocked ? 'bg-yellow-500/10 border border-yellow-500/30' : 'bg-gray-900'}">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-trophy ${isUnlocked ? 'text-yellow-500' : 'text-gray-500'}"></i>
+                                <span class="text-sm">${refer} Active Refer</span>
+                            </div>
+                            <span class="font-bold ${isUnlocked ? 'gold-text' : 'text-gray-500'}">${bonus} TK</span>
+                        </div>
+                        <div class="progress-bar mb-2">
+                            <div class="progress-fill" style="width: ${progress}%"></div>
+                        </div>
+                        <div class="flex items-center justify-between text-xs">
+                            <span class="text-gray-400">${activeRefers}/${refer} refers</span>
+                            ${isUnlocked && !isClaimed ? 
+                                `<button onclick="claimSalary('${refer}', ${bonus})" class="btn-gold px-3 py-1 text-xs">Claim</button>` :
+                                isClaimed ? 
+                                `<span class="text-green-500"><i class="fas fa-check mr-1"></i>Claimed</span>` :
+                                `<span class="text-gray-500">Locked</span>`
+                            }
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function claimSalary(referKey, bonus) {
+            if (!currentUser) return;
+            if (currentUser.salaryClaimed[referKey]) { showToast('Already claimed!', 'warning'); return; }
+            
+            currentUser.salaryClaimed[referKey] = true;
+            currentUser.wallets.salary = (currentUser.wallets.salary || 0) + bonus;
+            
+            let users = DB.get('users') || [];
+            let idx = users.findIndex(u => u.id === currentUser.id);
+            if (idx !== -1) { users[idx] = currentUser; DB.set('users', users); }
+            
+            addActivity('salary_claim', `Salary claimed: ${bonus} TK`, currentUser.id);
+            showToast(`${bonus} TK Salary Bonus Claimed!`, 'success');
+            updateWalletDisplay();
+            updateSalaryProgress();
+        }
+
+        function copyReferralLink() {
+            const link = document.getElementById('referralLink').value;
+            navigator.clipboard.writeText(link).then(() => { showToast('Referral Link Copied!', 'success'); });
+        }
+
+        // ===== ACTIVATION =====
+        function openActivationModal() {
+            const settings = DB.get('appSettings');
+            document.getElementById('activationAmount').textContent = settings?.activationFee || 100;
+            document.getElementById('bkashNum').textContent = settings?.bkashNumber || '01XXXXXXXXX';
+            document.getElementById('nagadNum').textContent = settings?.nagadNumber || '01XXXXXXXXX';
+            document.getElementById('activationModal').classList.add('active');
+        }
+
+        function submitActivation() {
+            const transactionId = document.getElementById('transactionId').value.trim();
+            const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
+            
+            if (!transactionId) { showToast('Transaction ID দিন!', 'error'); return; }
+            
+            let requests = DB.get('requests') || [];
+            const existingRequest = requests.find(r => r.userId === currentUser.id && r.type === 'activation' && r.status === 'pending');
+            if (existingRequest) { showToast('আপনার রিকুয়েস্ট ইতিমধ্যে আছে!', 'warning'); return; }
+            
+            const settings = DB.get('appSettings');
+            requests.push({
+                id: Date.now(), type: 'activation', userId: currentUser.id,
+                userName: currentUser.name, userPhone: currentUser.phone,
+                transactionId, paymentMethod, amount: settings?.activationFee || 100,
+                status: 'pending', createdAt: new Date().toISOString()
+            });
+            
+            DB.set('requests', requests);
+            addActivity('activation_request', `Activation request from ${currentUser.name}`, currentUser.id);
+            closeModal('activationModal');
+            document.getElementById('transactionId').value = '';
+            showToast('Activation Request Submitted!', 'success');
+        }
+
+        // ===== SIDEBAR =====
+        function openSidebar() { document.getElementById('sidebar').classList.add('open'); document.getElementById('overlay').classList.add('active'); }
+        function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('active'); }
+
+        // ===== MODALS =====
+        function closeModal(modalId) { document.getElementById(modalId).classList.remove('active'); }
+
+        function openJobModal(type) {
+            if (!currentUser) { showToast('Please login first!', 'error'); return; }
+            if (!currentUser.isActive) { showToast('Account Activate করুন!', 'warning'); closeSidebar(); openActivationModal(); return; }
+            
+            closeSidebar();
+            currentJobType = type;
+            
+            const jobSettings = DB.get('jobSettings') || {};
+            const settings = jobSettings[type] || {};
+            
+            const jobInfo = {
+                gmail: { title: 'Gmail Sale', icon: 'fab fa-google', color: 'text-red-500', desc: 'Gmail accounts বিক্রি করুন' },
+                facebook: { title: 'Facebook Sale', icon: 'fab fa-facebook', color: 'text-blue-500', desc: 'Facebook accounts বিক্রি করুন' },
+                typing: { title: 'Typing Job', icon: 'fas fa-keyboard', color: 'text-green-500', desc: 'টাইপিং কাজ করুন' },
+                adview: { title: 'Ad View Income', icon: 'fas fa-ad', color: 'text-purple-500', desc: 'বিজ্ঞাপন দেখুন' },
+                instagram: { title: 'Instagram Sale', icon: 'fab fa-instagram', color: 'text-pink-500', desc: 'Instagram accounts বিক্রি করুন' },
+                freeJob: { title: 'Free Job', icon: 'fas fa-gift', color: 'text-yellow-500', desc: 'ফ্রি কাজ করুন' }
+            };
+            
+            const info = jobInfo[type];
+            document.getElementById('jobModalTitle').innerHTML = `<i class="${info.icon} ${info.color} mr-2"></i>${info.title}`;
+            
+            if (settings.status === 'inactive') {
+                document.getElementById('jobModalContent').innerHTML = `
+                    <div class="text-center py-8">
+                        <i class="fas fa-lock text-5xl text-gray-600 mb-4"></i>
+                        <p class="text-gray-400">This job is currently unavailable</p>
+                    </div>`;
+                document.getElementById('jobModal').classList.add('active');
+                return;
+            }
+            
+            const walletBalance = currentUser.wallets[type] || 0;
+            const minWithdraw = settings.minWithdraw || 50;
+            const rate = settings.rate || 5;
+            const dailyLimit = settings.dailyLimit || 10;
+            const today = new Date().toDateString();
+            const todayTasks = currentUser.dailyTasks?.[today]?.[type] || 0;
+            
+            let extraContent = '';
+            if (type === 'freeJob') {
+                const appSettings = DB.get('appSettings');
+                const groupLink = settings.groupLink || appSettings?.freeJobGroupLink || '#';
+                extraContent = `
+                    <div class="mb-4 p-4 bg-yellow-500/10 rounded-xl border border-yellow-500/30">
+                        <p class="text-sm text-yellow-500 mb-2"><i class="fas fa-bell mr-1"></i> Join Group first:</p>
+                        <a href="${groupLink}" target="_blank" class="btn-gold w-full flex items-center justify-center gap-2 py-2 text-sm">
+                            <i class="fas fa-external-link-alt"></i> Join Group
+                        </a>
+                    </div>`;
+            }
+            
+            document.getElementById('jobModalContent').innerHTML = `
+                <div class="mb-6">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-gray-400">Wallet Balance</span>
+                        <span class="font-bold gold-text">${formatCurrency(walletBalance)}</span>
+                    </div>
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-gray-400">Rate</span>
+                        <span class="text-green-500">${rate} TK per task</span>
+                    </div>
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-gray-400">Today's Progress</span>
+                        <span class="text-blue-500">${todayTasks}/${dailyLimit}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-400">Min Withdraw</span>
+                        <span class="text-yellow-500">${minWithdraw} TK</span>
+                    </div>
+                </div>
+                
+                ${extraContent}
+                
+                <div class="mb-6">
+                    <p class="text-gray-400 mb-2">${info.desc}</p>
+                    <label class="block text-sm text-gray-400 mb-2">Task Details / Proof</label>
+                    <textarea class="input-field" id="taskDetails" rows="3" placeholder="Enter task details..."></textarea>
+                </div>
+                
+                <div class="flex gap-3">
+                    <button onclick="submitJob()" class="btn-gold flex-1" ${todayTasks >= dailyLimit ? 'disabled style="opacity:0.5"' : ''}>
+                        <i class="fas fa-paper-plane mr-2"></i>Submit Task
+                    </button>
+                    <button onclick="requestWithdraw('${type}')" class="btn-outline" ${walletBalance < minWithdraw ? 'disabled style="opacity:0.5"' : ''}>
+                        <i class="fas fa-wallet mr-2"></i>Withdraw
+                    </button>
+                </div>
+                
+                <div class="mt-6">
+                    <h4 class="font-medium mb-3">Recent History</h4>
+                    <div class="space-y-2 max-h-40 overflow-y-auto" id="jobHistory">${getJobHistory(type)}</div>
+                </div>`;
+            
+            document.getElementById('jobModal').classList.add('active');
+        }
+
+        function getJobHistory(type) {
+            if (!currentUser) return '<p class="text-gray-500 text-sm">No history</p>';
+            const requests = DB.get('requests') || [];
+            const history = requests.filter(r => r.userId === currentUser.id && r.jobType === type).slice(0, 5);
+            if (history.length === 0) return '<p class="text-gray-500 text-sm">No history</p>';
+            return history.map(h => `
+                <div class="flex items-center justify-between p-2 bg-gray-900 rounded-lg">
+                    <div>
+                        <p class="text-sm">${h.amount || 0} TK</p>
+                        <p class="text-xs text-gray-500">${new Date(h.createdAt).toLocaleDateString()}</p>
+                    </div>
+                    <span class="status-badge status-${h.status}">${h.status}</span>
+                </div>
+            `).join('');
+        }
+
+        function submitJob() {
+            const details = document.getElementById('taskDetails').value.trim();
+            if (!details) { showToast('Task details দিন!', 'error'); return; }
+            
+            const jobSettings = DB.get('jobSettings') || {};
+            const settings = jobSettings[currentJobType] || {};
+            const today = new Date().toDateString();
+            if (!currentUser.dailyTasks) currentUser.dailyTasks = {};
+            if (!currentUser.dailyTasks[today]) currentUser.dailyTasks[today] = {};
+            
+            const todayTasks = currentUser.dailyTasks[today][currentJobType] || 0;
+            if (todayTasks >= (settings.dailyLimit || 10)) { showToast('Daily limit reached!', 'warning'); return; }
+            
+            let requests = DB.get('requests') || [];
+            requests.push({
+                id: Date.now(), type: 'job', jobType: currentJobType,
+                userId: currentUser.id, userName: currentUser.name, userPhone: currentUser.phone,
+                details, amount: settings.rate || 5, status: 'pending', createdAt: new Date().toISOString()
+            });
+            DB.set('requests', requests);
+            
+            currentUser.dailyTasks[today][currentJobType] = todayTasks + 1;
+            let users = DB.get('users') || [];
+            let idx = users.findIndex(u => u.id === currentUser.id);
+            if (idx !== -1) { users[idx] = currentUser; DB.set('users', users); }
+            
+            addActivity('job_submit', `Job submitted: ${currentJobType}`, currentUser.id);
+            closeModal('jobModal');
+            showToast('Task Submitted! Waiting for approval', 'success');
+        }
+
+        function requestWithdraw(type) {
+            if (!currentUser) return;
+            const jobSettings = DB.get('jobSettings') || {};
+            const settings = jobSettings[type] || {};
+            const minWithdraw = settings.minWithdraw || 50;
+            const balance = currentUser.wallets[type] || 0;
+            if (balance < minWithdraw) { showToast(`Minimum ${minWithdraw} TK required!`, 'warning'); return; }
+            closeModal('jobModal');
+            openWithdrawModal(type);
+        }
+
+        function openWithdrawModal(type = null) {
+            if (!currentUser) return;
+            closeSidebar();
+            if (!currentUser.isActive) { showToast('Account Activate করুন!', 'warning'); openActivationModal(); return; }
+            
+            const jobSettings = DB.get('jobSettings') || {};
+            const walletTypes = [
+                { key: 'gmail', name: 'Gmail Wallet', icon: 'fab fa-google', color: 'text-red-500' },
+                { key: 'facebook', name: 'Facebook Wallet', icon: 'fab fa-facebook', color: 'text-blue-500' },
+                { key: 'typing', name: 'Typing Wallet', icon: 'fas fa-keyboard', color: 'text-green-500' },
+                { key: 'adview', name: 'Ad View Wallet', icon: 'fas fa-ad', color: 'text-purple-500' },
+                { key: 'instagram', name: 'Instagram Wallet', icon: 'fab fa-instagram', color: 'text-pink-500' },
+                { key: 'freeJob', name: 'Free Job Wallet', icon: 'fas fa-gift', color: 'text-yellow-500' },
+                { key: 'refer', name: 'Refer Wallet', icon: 'fas fa-users', color: 'text-cyan-500' },
+                { key: 'salary', name: 'Salary Wallet', icon: 'fas fa-money-bill-wave', color: 'text-emerald-500' }
+            ];
+            
+            document.getElementById('withdrawContent').innerHTML = `
+                <div class="space-y-3">
+                    ${walletTypes.map(w => {
+                        const settings = jobSettings[w.key] || {};
+                        const minWithdraw = settings.minWithdraw || 50;
+                        const balance = currentUser.wallets[w.key] || 0;
+                        const canWithdraw = balance >= minWithdraw;
+                        return `
+                            <div class="wallet-card flex items-center justify-between ${!canWithdraw ? 'opacity-50' : ''}">
+                                <div class="flex items-center gap-3">
+                                    <i class="${w.icon} text-xl ${w.color}"></i>
+                                    <div>
+                                        <p class="text-sm font-medium">${w.name}</p>
+                                        <p class="text-xs text-gray-400">Min: ${minWithdraw} TK</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <p class="font-bold gold-text">${formatCurrency(balance)}</p>
+                                    ${canWithdraw ? `<button onclick="processWithdraw('${w.key}')" class="text-xs text-yellow-500 hover:underline">Withdraw</button>` : `<span class="text-xs text-gray-500">Not enough</span>`}
+                                </div>
+                            </div>`;
+                    }).join('')}
+                </div>`;
+            document.getElementById('withdrawModal').classList.add('active');
+        }
+
+        function processWithdraw(type) {
+            if (!currentUser) return;
+            const jobSettings = DB.get('jobSettings') || {};
+            const settings = jobSettings[type] || {};
+            const minWithdraw = settings.minWithdraw || 50;
+            const balance = currentUser.wallets[type] || 0;
+            if (balance < minWithdraw) { showToast('Not enough balance!', 'error'); return; }
+            
+            const requests = DB.get('requests') || [];
+            const pendingWithdraw = requests.find(r => r.userId === currentUser.id && r.type === 'withdraw' && r.walletType === type && r.status === 'pending');
+            if (pendingWithdraw) { showToast('You have a pending withdraw request!', 'warning'); return; }
+            
+            const appSettings = DB.get('appSettings');
+            document.getElementById('withdrawContent').innerHTML = `
+                <div class="space-y-4">
+                    <div class="text-center">
+                        <p class="text-gray-400 mb-2">Withdraw from ${type} wallet</p>
+                        <p class="text-2xl font-bold gold-text">${formatCurrency(balance)}</p>
+                    </div>
+                    <div>
+                        <label class="text-sm text-gray-400 mb-2 block">Payment Method</label>
+                        <select class="input-field" id="withdrawMethod">
+                            <option value="bkash">bKash - ${appSettings?.bkashNumber || '01XXXXXXXXX'}</option>
+                            <option value="nagad">Nagad - ${appSettings?.nagadNumber || '01XXXXXXXXX'}</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-sm text-gray-400 mb-2 block">Your Number</label>
+                        <input type="text" class="input-field" id="withdrawNumber" placeholder="01XXXXXXXXX" value="${currentUser.phone}">
+                    </div>
+                    <div>
+                        <label class="text-sm text-gray-400 mb-2 block">Amount</label>
+                        <input type="number" class="input-field" id="withdrawAmount" value="${balance}" max="${balance}" min="${minWithdraw}">
+                    </div>
+                    <div class="flex gap-3">
+                        <button onclick="closeModal('withdrawModal')" class="btn-outline flex-1">Cancel</button>
+                        <button onclick="confirmWithdraw('${type}')" class="btn-gold flex-1">Confirm</button>
+                    </div>
+                </div>`;
+        }
+
+        function confirmWithdraw(type) {
+            const method = document.getElementById('withdrawMethod').value;
+            const number = document.getElementById('withdrawNumber').value.trim();
+            const amount = parseInt(document.getElementById('withdrawAmount').value);
+            if (!number || !amount) { showToast('All fields required!', 'error'); return; }
+            
+            const jobSettings = DB.get('jobSettings') || {};
+            const settings = jobSettings[type] || {};
+            const minWithdraw = settings.minWithdraw || 50;
+            const balance = currentUser.wallets[type] || 0;
+            if (amount < minWithdraw || amount > balance) { showToast('Invalid amount!', 'error'); return; }
+            
+            currentUser.wallets[type] -= amount;
+            let requests = DB.get('requests') || [];
+            requests.push({
+                id: Date.now(), type: 'withdraw', walletType: type,
+                userId: currentUser.id, userName: currentUser.name, userPhone: currentUser.phone,
+                method, number, amount, status: 'pending', createdAt: new Date().toISOString()
+            });
+            DB.set('requests', requests);
+            
+            let users = DB.get('users') || [];
+            let idx = users.findIndex(u => u.id === currentUser.id);
+            if (idx !== -1) { users[idx] = currentUser; DB.set('users', users); }
+            
+            addActivity('withdraw_request', `Withdraw request: ${amount} TK from ${type}`, currentUser.id);
+            closeModal('withdrawModal');
+            updateWalletDisplay();
+            showToast('Withdraw Request Submitted!', 'success');
+        }
+
+        function openHistoryModal() {
+            if (!currentUser) return;
+            closeSidebar();
+            const requests = DB.get('requests') || [];
+            const userRequests = requests.filter(r => r.userId === currentUser.id).reverse();
+            renderHistory(userRequests);
+            document.getElementById('historyModal').classList.add('active');
+        }
+
+        function renderHistory(data) {
+            const container = document.getElementById('historyContent');
+            if (data.length === 0) { container.innerHTML = '<p class="text-center text-gray-500">No history found</p>'; return; }
+            container.innerHTML = data.map(r => `
+                <div class="p-3 bg-gray-900 rounded-xl">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="font-medium">${r.type.charAt(0).toUpperCase() + r.type.slice(1)}</span>
+                        <span class="status-badge status-${r.status}">${r.status}</span>
+                    </div>
+                    <div class="flex items-center justify-between text-sm">
+                        <span class="text-gray-400">${r.jobType || r.walletType || r.paymentMethod || '-'}</span>
+                        <span class="gold-text">${r.amount} TK</span>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">${new Date(r.createdAt).toLocaleString()}</p>
+                </div>
+            `).join('');
+        }
+
+        function filterHistory(filter) {
+            const buttons = document.querySelectorAll('.history-filter');
+            buttons.forEach(b => { b.classList.remove('active', 'bg-yellow-500', 'text-black'); b.classList.add('bg-gray-800', 'text-gray-400'); });
+            event.target.classList.add('active', 'bg-yellow-500', 'text-black');
+            event.target.classList.remove('bg-gray-800', 'text-gray-400');
+            
+            const requests = DB.get('requests') || [];
+            let userRequests = requests.filter(r => r.userId === currentUser.id);
+            if (filter !== 'all') userRequests = userRequests.filter(r => r.status === filter);
+            renderHistory(userRequests.reverse());
+        }
+
+        function openSalaryModal() {
+            if (!currentUser) return;
+            closeSidebar();
+            updateSalaryProgress();
+            const settings = DB.get('appSettings');
+            const bonuses = settings?.salaryBonuses || { 5: 25, 10: 50, 15: 75, 20: 100 };
+            const activeRefers = currentUser.stats.activeRefers;
+            
+            const container = document.getElementById('salaryContent');
+            container.innerHTML = Object.entries(bonuses).map(([refer, bonus]) => {
+                const isUnlocked = activeRefers >= parseInt(refer);
+                const isClaimed = currentUser.salaryClaimed[refer];
+                return `
+                    <div class="card ${isUnlocked ? 'border-yellow-500/50' : ''}">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 rounded-full ${isUnlocked ? 'gold-gradient' : 'bg-gray-700'} flex items-center justify-center">
+                                    <i class="fas fa-trophy ${isUnlocked ? 'text-black' : 'text-gray-500'}"></i>
+                                </div>
+                                <div>
+                                    <p class="font-medium">${refer} Active Refer</p>
+                                    <p class="text-sm text-gray-400">Progress: ${activeRefers}/${refer}</p>
+                                </div>
+                            </div>
+                            <span class="text-xl font-bold ${isUnlocked ? 'gold-text' : 'text-gray-500'}">${bonus} TK</span>
+                        </div>
+                        ${isUnlocked && !isClaimed ? 
+                            `<button onclick="claimSalary('${refer}', ${bonus})" class="btn-gold w-full">Claim Bonus</button>` :
+                            isClaimed ? 
+                            `<div class="text-center text-green-500"><i class="fas fa-check-circle mr-2"></i>Already Claimed</div>` :
+                            `<div class="text-center text-gray-500"><i class="fas fa-lock mr-2"></i>Complete ${refer} active refers</div>`
+                        }
+                    </div>`;
+            }).join('');
+            document.getElementById('salaryModal').classList.add('active');
+        }
+
+        // ===== ADMIN PANEL LOGIC =====
+        function loadAdminPanel() { showPage('adminPanel'); updateAdminStats(); loadAdminOverview(); }
+
+        function updateAdminStats() {
+            const users = DB.get('users') || [];
+            const requests = DB.get('requests') || [];
+            document.getElementById('totalUsers').textContent = users.length;
+            document.getElementById('activeUsers').textContent = users.filter(u => u.isActive).length;
+            document.getElementById('pendingRequests').textContent = requests.filter(r => r.status === 'pending').length;
+            const approvedWithdraws = requests.filter(r => r.type === 'withdraw' && r.status === 'approved');
+            document.getElementById('totalWithdrawals').textContent = approvedWithdraws.reduce((sum, r) => sum + (r.amount || 0), 0);
+        }
+
+        function switchAdminTab(tab) {
+            const tabs = document.querySelectorAll('.admin-tab');
+            tabs.forEach(t => { t.classList.remove('bg-yellow-500', 'text-black'); t.classList.add('bg-gray-800', 'text-gray-400'); });
+            event.target.classList.add('bg-yellow-500', 'text-black');
+            event.target.classList.remove('bg-gray-800', 'text-gray-400');
+            
+            document.querySelectorAll('.admin-content').forEach(c => c.style.display = 'none');
+            document.getElementById('admin' + tab.charAt(0).toUpperCase() + tab.slice(1)).style.display = 'block';
+            
+            if (tab === 'overview') loadAdminOverview();
+            if (tab === 'users') loadUsersList();
+            if (tab === 'requests') loadRequestsList();
+            if (tab === 'jobs') loadJobSettings();
+            if (tab === 'withdraw') loadWithdrawSettings();
+            if (tab === 'settings') loadAdminSettings();
+        }
+
+        function loadAdminOverview() {
+            const activities = DB.get('activities') || [];
+            const container = document.getElementById('recentActivity');
+            container.innerHTML = activities.slice(0, 10).map(a => `
+                <div class="flex items-center gap-3 p-3 bg-gray-900 rounded-xl">
+                    <div class="w-8 h-8 rounded-full bg-yellow-500/20 flex items-center justify-center">
+                        <i class="fas fa-bell text-yellow-500 text-sm"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-sm">${a.message}</p>
+                        <p class="text-xs text-gray-500">${new Date(a.timestamp).toLocaleString()}</p>
+                    </div>
+                </div>
+            `).join('') || '<p class="text-gray-500">No recent activity</p>';
+        }
+
+        function updateNotice() {
+            const notice = document.getElementById('adminNotice').value.trim();
+            if (!notice) return;
+            const settings = DB.get('appSettings') || {};
+            settings.notice = notice;
+            DB.set('appSettings', settings);
+            showToast('Notice Updated!', 'success');
+        }
+
+        function loadUsersList() {
+            const users = DB.get('users') || [];
+            renderUsersList(users);
+        }
+
+        function renderUsersList(users) {
+            const container = document.getElementById('usersList');
+            if (users.length === 0) { container.innerHTML = '<p class="text-center text-gray-500">No users found</p>'; return; }
+            container.innerHTML = users.map(u => `
+                <div class="card flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-full ${u.isActive ? 'gold-gradient' : 'bg-gray-700'} flex items-center justify-center">
+                            <i class="fas fa-user ${u.isActive ? 'text-black' : 'text-gray-500'}"></i>
+                        </div>
+                        <div>
+                            <p class="font-medium">${u.name}</p>
+                            <p class="text-sm text-gray-400">${u.phone}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="status-badge ${u.isActive ? 'status-approved' : 'status-pending'}">${u.isActive ? 'Active' : 'Inactive'}</span>
+                        <button onclick="toggleUserStatus(${u.id})" class="w-8 h-8 rounded-lg ${u.isActive ? 'bg-red-500/20 text-red-500' : 'bg-green-500/20 text-green-500'}">
+                            <i class="fas ${u.isActive ? 'fa-user-minus' : 'fa-user-check'}"></i>
+                        </button>
+                        <button onclick="deleteUser(${u.id})" class="w-8 h-8 rounded-lg bg-red-500/20 text-red-500">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function searchUsers() {
+            const query = document.getElementById('searchUser').value.trim().toLowerCase();
+            const users = DB.get('users') || [];
+            if (!query) { renderUsersList(users); return; }
+            const filtered = users.filter(u => u.name.toLowerCase().includes(query) || u.phone.includes(query));
+            renderUsersList(filtered);
+        }
+
+        function toggleUserStatus(userId) {
+            let users = DB.get('users') || [];
+            let user = users.find(u => u.id === userId);
+            if (user) {
+                user.isActive = !user.isActive;
+                // If activating, update referrer stats
+                if (user.referredBy && user.isActive) {
+                    let referrer = users.find(u => u.referralCode === user.referredBy);
+                    if (referrer) {
+                        referrer.stats.inactiveRefers = Math.max(0, referrer.stats.inactiveRefers - 1);
+                        referrer.stats.activeRefers++;
+                    }
+                }
+                DB.set('users', users);
+                updateAdminStats();
+                loadUsersList();
+                showToast(`User ${user.isActive ? 'activated' : 'deactivated'}!`, 'success');
+            }
+        }
+
+        function deleteUser(userId) {
+            if (!confirm('Are you sure you want to delete this user? This cannot be undone.')) return;
+            let users = DB.get('users') || [];
+            users = users.filter(u => u.id !== userId);
+            DB.set('users', users);
+            updateAdminStats();
+            loadUsersList();
+            showToast('User deleted!', 'success');
+        }
+
+        function loadRequestsList() {
+            const requests = DB.get('requests') || [];
+            renderRequestsList(requests.filter(r => r.status === 'pending'));
+        }
+
+        function renderRequestsList(data) {
+            const container = document.getElementById('requestsList');
+            if (data.length === 0) { container.innerHTML = '<p class="text-center text-gray-500">No requests found</p>'; return; }
+            container.innerHTML = data.map(r => `
+                <div class="card">
+                    <div class="flex items-center justify-between mb-3">
+                        <div>
+                            <span class="font-medium">${r.userName}</span>
+                            <span class="text-sm text-gray-400 ml-2">${r.userPhone}</span>
+                        </div>
+                        <span class="status-badge status-${r.status}">${r.status}</span>
+                    </div>
+                    <div class="text-sm text-gray-400 mb-3">
+                        <p><strong>Type:</strong> ${r.type}</p>
+                        ${r.jobType ? `<p><strong>Job:</strong> ${r.jobType}</p>` : ''}
+                        ${r.walletType ? `<p><strong>Wallet:</strong> ${r.walletType}</p>` : ''}
+                        ${r.transactionId ? `<p><strong>TXN ID:</strong> ${r.transactionId}</p>` : ''}
+                        ${r.details ? `<p><strong>Details:</strong> ${r.details}</p>` : ''}
+                        ${r.method ? `<p><strong>Method:</strong> ${r.method} - ${r.number}</p>` : ''}
+                        <p><strong>Amount:</strong> ${r.amount} TK</p>
+                        <p class="text-xs mt-2">${new Date(r.createdAt).toLocaleString()}</p>
+                    </div>
+                    <div class="flex gap-2">
+                        ${r.status === 'pending' ? `
+                            <button onclick="approveRequest(${r.id})" class="btn-gold flex-1 py-2 text-sm">
+                                <i class="fas fa-check mr-1"></i>Approve
+                            </button>
+                            <button onclick="rejectRequest(${r.id})" class="flex-1 py-2 bg-red-500/20 text-red-500 rounded-xl text-sm hover:bg-red-500 hover:text-white transition">
+                                <i class="fas fa-times mr-1"></i>Reject
+                            </button>
+                        ` : `
+                            <button onclick="deleteRequest(${r.id})" class="w-full py-2 bg-gray-700 text-gray-300 rounded-xl text-sm hover:bg-red-500 hover:text-white transition">
+                                <i class="fas fa-trash mr-1"></i>Delete History
+                            </button>
+                        `}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterRequests(filter) {
+            const buttons = document.querySelectorAll('.request-filter');
+            buttons.forEach(b => { b.classList.remove('active', 'bg-yellow-500', 'text-black'); b.classList.add('bg-gray-800', 'text-gray-400'); });
+            event.target.classList.add('active', 'bg-yellow-500', 'text-black');
+            event.target.classList.remove('bg-gray-800', 'text-gray-400');
+            
+            const requests = DB.get('requests') || [];
+            let filtered = requests;
+            if (filter !== 'all') filtered = requests.filter(r => r.type === filter);
+            renderRequestsList(filtered.reverse());
+        }
+
+        function approveRequest(requestId) {
+            let requests = DB.get('requests') || [];
+            let request = requests.find(r => r.id === requestId);
+            if (!request) return;
+            
+            request.status = 'approved';
+            DB.set('requests', requests);
+            
+            if (request.type === 'activation') {
+                let users = DB.get('users') || [];
+                let user = users.find(u => u.id === request.userId);
+                if (user) {
+                    user.isActive = true;
+                    // Handle Referral Bonus
+                    if (user.referredBy) {
+                        let referrer = users.find(u => u.referralCode === user.referredBy);
+                        if (referrer) {
+                            const settings = DB.get('appSettings');
+                            const bonus = settings?.referBonus || 10;
+                            referrer.wallets.refer = (referrer.wallets.refer || 0) + bonus;
+                            referrer.stats.inactiveRefers = Math.max(0, referrer.stats.inactiveRefers - 1);
+                            referrer.stats.activeRefers++;
+                        }
+                    }
+                    DB.set('users', users);
+                }
+            } else if (request.type === 'job') {
+                let users = DB.get('users') || [];
+                let user = users.find(u => u.id === request.userId);
+                if (user) {
+                    user.wallets[request.jobType] = (user.wallets[request.jobType] || 0) + request.amount;
+                    DB.set('users', users);
+                }
+            }
+            
+            addActivity('approve', `Request approved: ${request.type} - ${request.amount} TK`);
+            updateAdminStats();
+            loadRequestsList();
+            showToast('Request Approved!', 'success');
+        }
+
+        function rejectRequest(requestId) {
+            let requests = DB.get('requests') || [];
+            let request = requests.find(r => r.id === requestId);
+            if (!request) return;
+            
+            request.status = 'rejected';
+            DB.set('requests', requests);
+            
+            if (request.type === 'withdraw') {
+                let users = DB.get('users') || [];
+                let user = users.find(u => u.id === request.userId);
+                if (user) {
+                    user.wallets[request.walletType] = (user.wallets[request.walletType] || 0) + request.amount;
+                    DB.set('users', users);
+                }
+            }
+            
+            addActivity('reject', `Request rejected: ${request.type}`);
+            updateAdminStats();
+            loadRequestsList();
+            showToast('Request Rejected!', 'warning');
+        }
+
+        function deleteRequest(requestId) {
+            if (!confirm('Delete this history entry?')) return;
+            let requests = DB.get('requests') || [];
+            requests = requests.filter(r => r.id !== requestId);
+            DB.set('requests', requests);
+            loadRequestsList();
+            showToast('History deleted!', 'success');
+        }
+
+        function loadJobSettings() {
+            const settings = DB.get('jobSettings') || {};
+            const appSettings = DB.get('appSettings') || {};
+            
+            if (settings.freeJob) {
+                document.getElementById('freeJobRate').value = settings.freeJob.rate || 3;
+                document.getElementById('freeJobMinWithdraw').value = settings.freeJob.minWithdraw || 30;
+                document.getElementById('freeJobDailyLimit').value = settings.freeJob.dailyLimit || 10;
+                document.getElementById('freeJobStatus').value = settings.freeJob.status || 'active';
+                document.getElementById('freeJobGroupLink').value = settings.freeJob.groupLink || appSettings.freeJobGroupLink || '';
+            }
+            if (settings.gmail) {
+                document.getElementById('gmailRate').value = settings.gmail.rate || 5;
+                document.getElementById('gmailMinWithdraw').value = settings.gmail.minWithdraw || 50;
+                document.getElementById('gmailDailyLimit').value = settings.gmail.dailyLimit || 10;
+                document.getElementById('gmailStatus').value = settings.gmail.status || 'active';
+            }
+            if (settings.facebook) {
+                document.getElementById('facebookRate').value = settings.facebook.rate || 8;
+                document.getElementById('facebookMinWithdraw').value = settings.facebook.minWithdraw || 50;
+                document.getElementById('facebookDailyLimit').value = settings.facebook.dailyLimit || 5;
+                document.getElementById('facebookStatus').value = settings.facebook.status || 'active';
+            }
+            if (settings.typing) {
+                document.getElementById('typingRate').value = settings.typing.rate || 10;
+                document.getElementById('typingMinWithdraw').value = settings.typing.minWithdraw || 100;
+                document.getElementById('typingDailyLimit').value = settings.typing.dailyLimit || 20;
+                document.getElementById('typingStatus').value = settings.typing.status || 'active';
+            }
+            if (settings.adview) {
+                document.getElementById('adviewRate').value = settings.adview.rate || 2;
+                document.getElementById('adviewMinWithdraw').value = settings.adview.minWithdraw || 30;
+                document.getElementById('adviewDailyLimit').value = settings.adview.dailyLimit || 50;
+                document.getElementById('adviewStatus').value = settings.adview.status || 'active';
+            }
+            if (settings.instagram) {
+                document.getElementById('instagramRate').value = settings.instagram.rate || 10;
+                document.getElementById('instagramMinWithdraw').value = settings.instagram.minWithdraw || 50;
+                document.getElementById('instagramDailyLimit').value = settings.instagram.dailyLimit || 5;
+                document.getElementById('instagramStatus').value = settings.instagram.status || 'active';
+            }
+            if (settings.refer) document.getElementById('referMinWithdraw').value = settings.refer.minWithdraw || 50;
+            document.getElementById('referBonus').value = appSettings.referBonus || 10;
+            if (settings.salary) document.getElementById('salaryMinWithdraw').value = settings.salary.minWithdraw || 50;
+            document.getElementById('activationFee').value = appSettings.activationFee || 100;
+        }
+
+        function saveJobSettings(type) {
+            let settings = DB.get('jobSettings') || {};
+            
+            if (type === 'freeJob') {
+                settings.freeJob = {
+                    rate: parseInt(document.getElementById('freeJobRate').value) || 3,
+                    minWithdraw: parseInt(document.getElementById('freeJobMinWithdraw').value) || 30,
+                    dailyLimit: parseInt(document.getElementById('freeJobDailyLimit').value) || 10,
+                    status: document.getElementById('freeJobStatus').value,
+                    groupLink: document.getElementById('freeJobGroupLink').value.trim()
+                };
+                let appSettings = DB.get('appSettings') || {};
+                appSettings.freeJobGroupLink = settings.freeJob.groupLink;
+                DB.set('appSettings', appSettings);
+            } else if (type === 'gmail') {
+                settings.gmail = {
+                    rate: parseInt(document.getElementById('gmailRate').value) || 5,
+                    minWithdraw: parseInt(document.getElementById('gmailMinWithdraw').value) || 50,
+                    dailyLimit: parseInt(document.getElementById('gmailDailyLimit').value) || 10,
+                    status: document.getElementById('gmailStatus').value
+                };
+            } else if (type === 'facebook') {
+                settings.facebook = {
+                    rate: parseInt(document.getElementById('facebookRate').value) || 8,
+                    minWithdraw: parseInt(document.getElementById('facebookMinWithdraw').value) || 50,
+                    dailyLimit: parseInt(document.getElementById('facebookDailyLimit').value) || 5,
+                    status: document.getElementById('facebookStatus').value
+                };
+            } else if (type === 'typing') {
+                settings.typing = {
+                    rate: parseInt(document.getElementById('typingRate').value) || 10,
+                    minWithdraw: parseInt(document.getElementById('typingMinWithdraw').value) || 100,
+                    dailyLimit: parseInt(document.getElementById('typingDailyLimit').value) || 20,
+                    status: document.getElementById('typingStatus').value
+                };
+            } else if (type === 'adview') {
+                settings.adview = {
+                    rate: parseInt(document.getElementById('adviewRate').value) || 2,
+                    minWithdraw: parseInt(document.getElementById('adviewMinWithdraw').value) || 30,
+                    dailyLimit: parseInt(document.getElementById('adviewDailyLimit').value) || 50,
+                    status: document.getElementById('adviewStatus').value
+                };
+            } else if (type === 'instagram') {
+                settings.instagram = {
+                    rate: parseInt(document.getElementById('instagramRate').value) || 10,
+                    minWithdraw: parseInt(document.getElementById('instagramMinWithdraw').value) || 50,
+                    dailyLimit: parseInt(document.getElementById('instagramDailyLimit').value) || 5,
+                    status: document.getElementById('instagramStatus').value
+                };
+            } else if (type === 'refer') {
+                settings.refer = { minWithdraw: parseInt(document.getElementById('referMinWithdraw').value) || 50 };
+                let appSettings = DB.get('appSettings') || {};
+                appSettings.referBonus = parseInt(document.getElementById('referBonus').value) || 10;
+                DB.set('appSettings', appSettings);
+            } else if (type === 'salary') {
+                settings.salary = { minWithdraw: parseInt(document.getElementById('salaryMinWithdraw').value) || 50 };
+                let appSettings = DB.get('appSettings') || {};
+                appSettings.activationFee = parseInt(document.getElementById('activationFee').value) || 100;
+                DB.set('appSettings', appSettings);
+            }
+            
+            DB.set('jobSettings', settings);
+            showToast('Settings Saved!', 'success');
+        }
+
+        function loadWithdrawSettings() {
+            const settings = DB.get('appSettings') || {};
+            document.getElementById('bkashNumber').value = settings.bkashNumber || '';
+            document.getElementById('nagadNumber').value = settings.nagadNumber || '';
+            loadWithdrawRequestsList();
+        }
+
+        function savePaymentMethods() {
+            let settings = DB.get('appSettings') || {};
+            settings.bkashNumber = document.getElementById('bkashNumber').value.trim();
+            settings.nagadNumber = document.getElementById('nagadNumber').value.trim();
+            DB.set('appSettings', settings);
+            showToast('Payment Methods Saved!', 'success');
+        }
+
+        function loadWithdrawRequestsList() {
+            const requests = DB.get('requests') || [];
+            const withdraws = requests.filter(r => r.type === 'withdraw').reverse();
+            const container = document.getElementById('withdrawRequestsList');
+            if (withdraws.length === 0) { container.innerHTML = '<p class="text-center text-gray-500">No withdraw requests</p>'; return; }
+            container.innerHTML = withdraws.map(r => `
+                <div class="p-3 bg-gray-900 rounded-xl">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="font-medium">${r.userName}</span>
+                        <span class="status-badge status-${r.status}">${r.status}</span>
+                    </div>
+                    <p class="text-sm text-gray-400">${r.method}: ${r.number}</p>
+                    <p class="text-sm gold-text">${r.amount} TK</p>
+                    <p class="text-xs text-gray-500">${new Date(r.createdAt).toLocaleString()}</p>
+                    ${r.status === 'pending' ? `
+                        <div class="flex gap-2 mt-2">
+                            <button onclick="approveRequest(${r.id})" class="btn-gold flex-1 py-1 text-sm">Approve</button>
+                            <button onclick="rejectRequest(${r.id})" class="flex-1 py-1 bg-red-500/20 text-red-500 rounded-lg text-sm">Reject</button>
+                        </div>
+                    ` : `
+                        <button onclick="deleteRequest(${r.id})" class="w-full mt-2 py-1 bg-gray-700 text-gray-300 rounded-lg text-sm hover:bg-red-500 hover:text-white transition">Delete History</button>
+                    `}
+                </div>
+            `).join('');
+        }
+
+        function loadAdminSettings() {
+            const settings = DB.get('appSettings') || {};
+            const bonuses = settings.salaryBonuses || { 5: 25, 10: 50, 15: 75, 20: 100 };
+            document.getElementById('salary5').value = bonuses[5] || 25;
+            document.getElementById('salary10').value = bonuses[10] || 50;
+            document.getElementById('salary15').value = bonuses[15] || 75;
+            document.getElementById('salary20').value = bonuses[20] || 100;
+        }
+
+        function updateAdminCredentials() {
+            const username = document.getElementById('newAdminUsername').value.trim();
+            const password = document.getElementById('newAdminPassword').value.trim();
+            if (!username || !password) { showToast('All fields required!', 'error'); return; }
+            DB.set('adminCredentials', { username, password });
+            showToast('Admin Credentials Updated!', 'success');
+            document.getElementById('newAdminUsername').value = '';
+            document.getElementById('newAdminPassword').value = '';
+        }
+
+        function saveSalaryBonuses() {
+            let settings = DB.get('appSettings') || {};
+            settings.salaryBonuses = {
+                5: parseInt(document.getElementById('salary5').value) || 25,
+                10: parseInt(document.getElementById('salary10').value) || 50,
+                15: parseInt(document.getElementById('salary15').value) || 75,
+                20: parseInt(document.getElementById('salary20').value) || 100
+            };
+            DB.set('appSettings', settings);
+            showToast('Salary Bonuses Saved!', 'success');
+        }
+
+        function resetAllData() {
+            if (!confirm('DANGER! This will delete ALL users, requests, and settings. Continue?')) return;
+            if (!confirm('Are you REALLY sure? This cannot be undone!')) return;
+            localStorage.clear();
+            initializeApp();
+            showToast('All data reset!', 'warning');
+            adminLogout();
+        }
+
+        function deleteInactiveUsers() {
+            if (!confirm('This will delete ALL users who have NOT activated their account (Unpaid). Continue?')) return;
+            if (!confirm('Final Warning! Delete all unpaid accounts?')) return;
+            
+            let users = DB.get('users') || [];
+            const beforeCount = users.length;
+            users = users.filter(u => u.isActive);
+            const afterCount = users.length;
+            const deletedCount = beforeCount - afterCount;
+            
+            DB.set('users', users);
+            updateAdminStats();
+            loadUsersList();
+            showToast(`${deletedCount} Inactive Users Deleted!`, 'success');
+        }
+
+        // ===== APP INITIALIZATION CHECK =====
+        function checkLoginState() {
+            const userId = DB.get('currentUser');
+            const adminLoggedIn = DB.get('adminLoggedIn');
+            
+            if (userId) {
+                const users = DB.get('users') || [];
+                const user = users.find(u => u.id === userId);
+                if (user) {
+                    currentUser = user;
+                    loadUserDashboard();
+                    return;
+                }
+            }
+            if (adminLoggedIn) {
+                loadAdminPanel();
+                return;
+            }
+            showPage('loginPage');
+        }
+
+        function checkReferralCode() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const startapp = urlParams.get('startapp');
+            if (startapp && startapp.startsWith('REF')) {
+                document.getElementById('regReferral').value = startapp;
+                switchAuthTab('register');
+            }
+        }
+
+        checkLoginState();
+        checkReferralCode();
+
+        // Real-time data sync simulation
+        setInterval(() => {
+            if (currentUser) {
+                const users = DB.get('users') || [];
+                const user = users.find(u => u.id === currentUser.id);
+                if (user) {
+                    // Check if data changed externally
+                    if (JSON.stringify(user) !== JSON.stringify(currentUser)) {
+                        currentUser = user;
+                        loadUserDashboard();
+                    }
+                }
+            }
+        }, 3000);
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeSidebar();
+                document.querySelectorAll('.modal').forEach(m => m.classList.remove('active'));
+            }
+        });
+    </script>
+</body>
+</html>
