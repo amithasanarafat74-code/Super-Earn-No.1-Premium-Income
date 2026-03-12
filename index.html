@@ -98,6 +98,22 @@
             background: var(--gold-primary);
             color: #000;
         }
+        
+        .btn-danger {
+            background: rgba(239, 68, 68, 0.1);
+            color: #EF4444;
+            font-weight: 500;
+            padding: 10px 20px;
+            border-radius: 12px;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .btn-danger:hover {
+            background: #EF4444;
+            color: white;
+            border-color: #EF4444;
+        }
 
         .input-field {
             width: 100%;
@@ -256,6 +272,12 @@
             color: var(--gold-primary);
             border-bottom-color: var(--gold-primary);
         }
+        /* Disabled Tab Style */
+        .tab-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            border-bottom-color: transparent;
+        }
 
         /*=================== EFFECTS ===================*/
         .floating-particles {
@@ -311,8 +333,9 @@
 
                 <div class="card">
                     <div class="flex mb-6 border-b border-gray-700">
-                        <button class="tab-btn active flex-1" onclick="switchAuthTab('login')">Login</button>
-                        <button class="tab-btn flex-1" onclick="switchAuthTab('register')">Register</button>
+                        <button class="tab-btn active flex-1" id="loginTabBtn" onclick="switchAuthTab('login')">Login</button>
+                        <!-- Added ID: registerTabBtn -->
+                        <button class="tab-btn flex-1" id="registerTabBtn" onclick="switchAuthTab('register')">Register</button>
                     </div>
 
                     <!-- Login Form -->
@@ -348,7 +371,7 @@
                             <label class="block text-sm text-gray-400 mb-2">Referral Code (Optional)</label>
                             <input type="text" class="input-field" id="regReferral" placeholder="REFXXXXXX">
                         </div>
-                        <button type="submit" class="btn-gold w-full mb-4">
+                        <button type="submit" class="btn-gold w-full mb-4" id="regSubmitBtn">
                             <i class="fas fa-user-plus"></i>Register
                         </button>
                     </form>
@@ -1060,14 +1083,14 @@
     <script>
         // ===== FIREBASE CONFIG =====
         const firebaseConfig = {
-  apiKey: "AIzaSyAvpY9C9to5kle3EWZEqr1Qru-3kIZY0_o",
-  authDomain: "superearnpremium.firebaseapp.com",
-  projectId: "superearnpremium",
-  storageBucket: "superearnpremium.firebasestorage.app",
-  messagingSenderId: "276608402143",
-  appId: "1:276608402143:web:5107fdfa64174bbe54df6a",
-  measurementId: "G-34N65GEZ1G"
-};
+            apiKey: "AIzaSyAvpY9C9to5kle3EWZEqr1Qru-3kIZY0_o",
+            authDomain: "superearnpremium.firebaseapp.com",
+            projectId: "superearnpremium",
+            storageBucket: "superearnpremium.firebasestorage.app",
+            messagingSenderId: "276608402143",
+            appId: "1:276608402143:web:5107fdfa64174bbe54df6a",
+            measurementId: "G-34N65GEZ1G"
+        };
 
         // ===== LOCAL STORAGE DATABASE HELPER =====
         const DB = {
@@ -1141,6 +1164,17 @@
                     });
                 });
                 if (needsMigration) DB.set('users', users);
+            }
+            
+            // ===== UPDATE: CHECK REGISTRATION LOCK =====
+            // If this device has already registered, lock the register tab
+            if (localStorage.getItem('device_registered')) {
+                const regBtn = document.getElementById('registerTabBtn');
+                if (regBtn) {
+                    regBtn.disabled = true;
+                    regBtn.classList.add('opacity-40', 'cursor-not-allowed');
+                    regBtn.textContent = 'Registered';
+                }
             }
         }
         
@@ -1234,8 +1268,11 @@
             
             let users = DB.get('users') || [];
             
+            // ===== UPDATE: DUPLICATE CHECK =====
+            // Check if phone number already exists in the database
             if (users.find(u => u.phone === phone)) {
-                showToast('এই নম্বর দিয়ে ইতিমধ্যে রেজিস্ট্রেশন করা হয়েছে!', 'error');
+                showToast('এই নম্বর দিয়ে ইতিমধ্যে রেজিস্ট্রেশন করা হয়েছে! লগইন করুন।', 'error');
+                switchAuthTab('login'); // Switch to login tab automatically
                 return;
             }
             
@@ -1254,6 +1291,10 @@
             users.push(newUser);
             DB.set('users', users);
             
+            // ===== UPDATE: LOCK DEVICE =====
+            // Set a flag in local storage to prevent re-registration on this device
+            localStorage.setItem('device_registered', 'true');
+            
             // Update Referrer Stats
             if (referralCode) {
                 let referrer = users.find(u => u.referralCode === referralCode);
@@ -1267,6 +1308,14 @@
             addActivity('register', `New user: ${name}`, newUser.id);
             showToast('রেজিস্ট্রেশন সফল! এখন লগইন করুন', 'success');
             switchAuthTab('login');
+            
+            // Lock the register button after successful registration
+            const regBtn = document.getElementById('registerTabBtn');
+            if (regBtn) {
+                regBtn.disabled = true;
+                regBtn.classList.add('opacity-40', 'cursor-not-allowed');
+                regBtn.textContent = 'Registered';
+            }
         }
 
         function handleLogin(e) {
